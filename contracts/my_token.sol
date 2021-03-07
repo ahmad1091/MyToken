@@ -48,4 +48,10 @@ contract MyToken {
         emit Approval(msg.sender, _spender, _amount);
         return true;
     }
+
+    function transferFrom(
+        address _form,
+        address _to,
+        uint256 _value
+    ) public returns (bool success) {}
 }
