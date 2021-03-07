@@ -42,4 +42,65 @@ contract("MyToken", (accounts) => {
         );
       });
   });
+
+  it("transfer token ownership", () => {
+    return MyToken.deployed()
+      .then((instance) => {
+        tokenInstance = instance;
+        return tokenInstance.transfer.call(accounts[1], 10000000000);
+      })
+      .then(assert.fail)
+      .catch((err) => {
+        assert(err.message.includes("revert"), "message must includes revert");
+        return tokenInstance.transfer
+          .call(accounts[1], 500000, {
+            from: accounts[0],
+          })
+          .then((success) => {
+            assert.strictEqual(success, true);
+            return tokenInstance.transfer(accounts[1], 500000, {
+              from: accounts[0],
+            });
+          })
+          .then((receipt) => {
+            assert.strictEqual(receipt.logs.length, 1, "triggers one event");
+            assert.strictEqual(
+              receipt.logs[0].event,
+              "Transfer",
+              'should be the "Transfer" event'
+            );
+            assert.strictEqual(
+              receipt.logs[0].args._from,
+              accounts[0],
+              "logs the account the tokens are transferred from"
+            );
+            assert.strictEqual(
+              receipt.logs[0].args._to,
+              accounts[1],
+              "logs the account the tokens are transferred to"
+            );
+            assert.strictEqual(
+              receipt.logs[0].args._value.toNumber(),
+              500000,
+              "logs the transfer amount"
+            );
+            return tokenInstance.balanceOf(accounts[1]);
+          })
+          .then((balance) => {
+            assert.strictEqual(
+              balance.toNumber(),
+              500000,
+              "adds the amount for the reciver account"
+            );
+            return tokenInstance.balanceOf(accounts[0]);
+          })
+          .then((balance) => {
+            assert.strictEqual(
+              balance.toNumber(),
+              500000,
+              "proper amount substracted from master account"
+            );
+          });
+      });
+  });
 });
