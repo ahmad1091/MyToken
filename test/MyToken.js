@@ -12,7 +12,11 @@ contract("MyToken", (accounts) => {
         return tokenInstance.symbol();
       })
       .then((symbol) => {
-        assert.strictEqual(symbol, "MYN");
+        assert.strictEqual(symbol, "MYN", "check the symbol");
+        return tokenInstance.standard();
+      })
+      .then((standard) => {
+        assert.strictEqual(standard, "ERC20", "check the standard");
       });
   });
 
