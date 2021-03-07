@@ -8,3 +8,4 @@ contract MyToken {
         totalSupply = 1000000;
     }
 }
+    
