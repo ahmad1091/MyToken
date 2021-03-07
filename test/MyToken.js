@@ -132,7 +132,7 @@ contract("MyToken", (accounts) => {
           "logs the account the tokens are authorized to"
         );
         assert.strictEqual(
-          receipt.logs[0].args._value,
+          receipt.logs[0].args._amount.toNumber(),
           100,
           "logs the transfer amount"
         );
@@ -140,7 +140,7 @@ contract("MyToken", (accounts) => {
       })
       .then((allowance) => {
         assert.strictEqual(
-          allowance,
+          allowance.toNumber(),
           100,
           "stores the allowance for delegated trasnfer"
         );
@@ -148,7 +148,7 @@ contract("MyToken", (accounts) => {
   });
 
   it("handles delegated token transfers", function () {
-    return DappToken.deployed()
+    return MyToken.deployed()
       .then(function (instance) {
         tokenInstance = instance;
         fromAccount = accounts[2];
@@ -159,7 +159,7 @@ contract("MyToken", (accounts) => {
       })
       .then(function (receipt) {
         // Approve spendingAccount to spend 10 tokens form fromAccount
-        return tokenInstance.approve(spendingAccount, 10, {
+        return tokenInstance.approve(spendingAccount, 9, {
           from: fromAccount,
         });
       })
@@ -175,6 +175,71 @@ contract("MyToken", (accounts) => {
           error.message.indexOf("revert") >= 0,
           "cannot transfer value larger than balance"
         );
+        return tokenInstance.transferFrom(fromAccount, toAccount, 20, {
+          from: spendingAccount,
+        });
+      })
+      .then(assert.fail)
+      .catch((err) => {
+        assert(
+          err.message.includes("revert"),
+          "cannot transfer value larger than approved amount"
+        );
+        return tokenInstance.transferFrom
+          .call(fromAccount, toAccount, 9, { from: spendingAccount })
+          .then((success) => {
+            assert(success, "transfer vaild mount success");
+            return tokenInstance.transferFrom(fromAccount, toAccount, 9, {
+              from: spendingAccount,
+            });
+          })
+          .then((receipt) => {
+            assert.equal(receipt.logs.length, 1, "triggers one event");
+            assert.equal(
+              receipt.logs[0].event,
+              "Transfer",
+              'should be the "Transfer" event'
+            );
+            assert.equal(
+              receipt.logs[0].args._from,
+              fromAccount,
+              "logs the account the tokens are transferred from"
+            );
+            assert.equal(
+              receipt.logs[0].args._to,
+              toAccount,
+              "logs the account the tokens are transferred to"
+            );
+            assert.equal(
+              receipt.logs[0].args._value.toNumber(),
+              9,
+              "logs the transfer amount"
+            );
+            return tokenInstance.balanceOf(fromAccount);
+          })
+          .then((balance) => {
+            assert.strictEqual(
+              balance.toNumber(),
+              91,
+              "deducts the amount from the sending account"
+            );
+            return tokenInstance.balanceOf(toAccount);
+          })
+          .then((balance) => {
+            assert.strictEqual(
+              balance.toNumber(),
+              9,
+              "add the amount to the reciving account"
+            );
+            return tokenInstance.allowance(fromAccount, spendingAccount);
+          })
+          .then((allowance) => {
+            assert.strictEqual(
+              allowance.toNumber(),
+              0,
+              "deducts the amount from the allawance"
+            );
+          });
       });
   });
 });
