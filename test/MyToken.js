@@ -103,4 +103,47 @@ contract("MyToken", (accounts) => {
           });
       });
   });
+
+  it("approves tokens for delegated transfer", () => {
+    return MyToken.deployed()
+      .then((instance) => {
+        tokenInstance = instance;
+        return tokenInstance.approve.call(accounts[1], 100);
+      })
+      .then((success) => {
+        assert.strictEqual(success, true, "transaction aproving");
+        return tokenInstance.approve(accounts[1], 100, { from: accounts[0] });
+      })
+      .then((receipt) => {
+        assert.strictEqual(receipt.logs.length, 1, "triggers one event");
+        assert.strictEqual(
+          receipt.logs[0].event,
+          "Approval",
+          'should be the "Approval" event'
+        );
+        assert.strictEqual(
+          receipt.logs[0].args._owner,
+          accounts[0],
+          "logs the account the tokens are authorized by"
+        );
+        assert.strictEqual(
+          receipt.logs[0].args._spender,
+          accounts[1],
+          "logs the account the tokens are authorized to"
+        );
+        assert.strictEqual(
+          receipt.logs[0].args._value,
+          100,
+          "logs the transfer amount"
+        );
+        return tokenInstance.allowance(accounts[0], accounts[1]);
+      })
+      .then((allowance) => {
+        assert.strictEqual(
+          allowance,
+          100,
+          "stores the allowance for delegated trasnfer"
+        );
+      });
+  });
 });
