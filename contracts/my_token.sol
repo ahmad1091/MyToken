@@ -13,6 +13,7 @@ contract MyToken {
         address indexed _spender,
         uint256 _amount
     );
+
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
@@ -61,6 +62,7 @@ contract MyToken {
         balanceOf[_to] += _value;
 
         allowance[_from][msg.sender] -= _value;
+
         emit Transfer(_from, _to, _value);
         return true;
     }
