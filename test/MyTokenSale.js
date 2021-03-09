@@ -1,5 +1,3 @@
-// const { assert } = require("console");
-
 const MyTokenSale = artifacts.require("./MyTokenSale.sol");
 const MyToken = artifacts.require("./MyToken.sol");
 
@@ -122,5 +120,36 @@ contract("MyTokenSale", (accounts) => {
             });
         });
     });
+  });
+
+  it("ends token sale", () => {
+    return MyToken.deployed()
+      .then((instance) => {
+        tokenInstance = instance;
+        return MyTokenSale.deployed();
+      })
+      .then((instance) => {
+        tokenSaleInstance = instance;
+        return tokenSaleInstance.endSale({ from: buyer });
+      })
+      .then(assert.fail)
+      .catch((err) => {
+        assert(err.message.includes("revert", "must be admin to end the sale"));
+        return tokenSaleInstance.endSale({ from: admin });
+      })
+      .then((receipt) => {
+        return tokenInstance.balanceOf(admin);
+      })
+      .then((balance) => {
+        assert.strictEqual(
+          balance.toNumber(),
+          999990,
+          "returns all unsold dapp tokens to admin"
+        );
+        return tokenSaleInstance.tokenPrice();
+      })
+      .then((price) => {
+        assert.strictEqual(price.toNumber(), 0, "token price was rest");
+      });
   });
 });
