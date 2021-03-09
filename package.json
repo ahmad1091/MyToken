@@ -1,0 +1,33 @@
+{
+  "name": "mytoken",
+  "version": "1.0.0",
+  "description": "ERC20 standard token",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "at-least-node": "^1.0.0",
+    "fs-extra": "^9.1.0",
+    "graceful-fs": "^4.2.6",
+    "jsonfile": "^6.1.0",
+    "universalify": "^2.0.0"
+  },
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  ,"dev": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmad1091/MyToken.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ahmad1091/MyToken/issues"
+  },
+  "homepage": "https://github.com/ahmad1091/MyToken#readme"
+}
